@@ -71,7 +71,10 @@ export default {
           num++
           if (num === resultsLength) {
             console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
-            setInterval(ref.findPhone(), 20000)
+            // setInterval(ref.findPhone(), 20000)
+            setInterval(() => {
+              ref.findPhone()
+            }, 20000)
           }
           response.data.data.forEach(function (item4, index4) {
             if (item4.story && item4.story.indexOf('is live now') !== -1) {
