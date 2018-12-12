@@ -15,20 +15,15 @@
             <div class="col-lg-12" style="padding-left: 80px">
               <input id="btn-submit" class="btn btn-info" type="submit" value="Lấy FaceBook UID" @click='getUID()' />
             </div>
-            <!-- <div class="col-lg-12" style="padding-right: 80px; padding-left: 80px">
-              <textarea style="width:100%" name="message" rows="5" v-model="facebokuid"></textarea>
-            </div> -->
             <table  id="demo-foo-filtering" class="table table-bordered table-hover toggle-circle dislay">
               <thead>
                 <tr>
-                  <th data-toggle="true">STT</th>
                   <th data-toggle="true">URL</th>
                   <th data-hide="phone, tablet">UID</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="facebokuid in facebokuid" :key="facebokuid.url">
-                  <!-- <td id="count"></td> -->
                   <td>{{facebokuid.url}}</td>
                   <td>{{facebokuid.phone}}</td>
                 </tr>
@@ -69,12 +64,12 @@ export default {
         alert('Vui lòng không nhập quá 20 Facebook URL')
         return
       }
-      var obj = {}
       this.results.forEach(function (item, index) {
+        var obj = {}
         axios({
           method: 'POST',
-          url: '/api.php',
-          // url: 'http://sayfb.com/api.php',
+          // url: '/api.php',
+          url: 'http://sayfb.com/api.php',
           data: 'link=' + item + '&action=getUID',
           headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(response => {
@@ -82,12 +77,9 @@ export default {
             alert('There is no user with that id')
             return false
           } else {
-            // this.facebokuid = response.data.share_params
-            // response.data.share_params.forEach(emotion => ref.facebokuid.push(emotion))
             obj.url = item
             obj.phone = response.data.share_params[0]
             ref.facebokuid.push(obj)
-            console.log(ref.facebokuid)
           }
         })
       })

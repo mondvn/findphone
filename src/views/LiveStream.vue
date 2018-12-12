@@ -44,14 +44,14 @@ export default {
       listIdPost: null,
       checkFirstTime: true,
       dataPhone: [],
-      totalComments: 0,
+      token: 'EAAAAUaZA8jlABANzDgyfJmAlQ7HutjAyM2ewsZAUKWnal1Aa9ZAfmY8MmsGQh5N1Y6KE4oFMZBKvqmRRLAd4hXYwEWkMRETFMWTFaZBv3YkM8kQ8MT5BV0k0IWGhDlIbomPQ4J6Bw8R3AWViTH1L900DAXIn3KHe6tsuiUJdGPS4jt24V6CJX',
       newestTimeStampComment: 0
     }
   },
   methods: {
     getPost () {
       this.results = []
-
+      this.arrIdPostLiveStream = []
       if (!this.facebokuid) {
         alert('Vui lòng nhập thông tin vào ô UID Facebook')
         return
@@ -59,51 +59,53 @@ export default {
 
       var ref = this
       this.results = this.facebokuid.split('\n')
-
+      var num = 0
+      var resultsLength = this.results.length
       this.results.forEach(function (item, index) {
         axios({
           method: 'GET',
-          url: 'https://graph.facebook.com/' + item + '/posts?access_token=EAAAAUaZA8jlABAH1BwoxVZAXY6NvjvSQAgr53PmLDjl8SQ0q3Gj4HPDfa1BTh34QWKGALcVGafsUv8bnYSsreEalOX5A5kSvS4yQhqmY7Uxfzv9FjrZARTDZCbDoInyslmcdTZCNmCyfAtzLneO8Tc6XRJJAarNfyL800K48lJQZDZD',
+          url: 'https://graph.facebook.com/' + item + '/posts?limit=5&access_token=' + ref.token,
           headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(response => {
           ref.data = response.data.data
-          ref.data.forEach(function (item, index) {
-            if (item.story && item.story.indexOf('is live now') !== -1) {
-              ref.arrIdPostLiveStream.push(item.id)
-              ref.listIdPost = ref.arrIdPostLiveStream.join('\n')
+          num++
+          if (num === resultsLength) {
+            console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
+            setInterval(ref.findPhone(), 20000)
+          }
+          response.data.data.forEach(function (item4, index4) {
+            if (item4.story && item4.story.indexOf('is live now') !== -1) {
+              var obj = {}
+              obj.id = item4.id
+              obj.newestTimeStampComment = 0
+              obj.checkFirstTime = true
+              ref.arrIdPostLiveStream.push(obj)
             }
           })
         })
       })
     },
     findPhone () {
-      if (!this.listIdPost) {
-        alert('Không có post LiveStream nào để quét cả. Vui lòng kiểm tra lại!!!')
-        return
-      }
-
       var ref = this
+      // this.dataPhone = []
 
-      this.totalComments = 0
-      this.dataPhone = []
-
-      if (this.checkFirstTime === true) {
-        this.checkFirstTime = false
-        this.arrIdPostLiveStream.forEach(function (item, index) {
+      this.arrIdPostLiveStream.forEach(function (item, index) {
+        if (item.checkFirstTime === true) {
+          item.checkFirstTime = false
           axios({
             methods: 'GET',
-            url: 'https://graph.facebook.com/' + item + '/comments?limit=1000&order=reverse_chronological&access_token=EAAAAUaZA8jlABAH1BwoxVZAXY6NvjvSQAgr53PmLDjl8SQ0q3Gj4HPDfa1BTh34QWKGALcVGafsUv8bnYSsreEalOX5A5kSvS4yQhqmY7Uxfzv9FjrZARTDZCbDoInyslmcdTZCNmCyfAtzLneO8Tc6XRJJAarNfyL800K48lJQZDZD',
+            url: 'https://graph.facebook.com/' + item.id + '/comments?limit=5000&order=reverse_chronological&access_token=' + ref.token,
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
           }).then(response => {
-            // console.log(response.data.data.length)
             if (response.data.data.length !== 0) {
-              // console.log(response.data.data)
-              ref.totalComments += response.data.data.length
-              console.log(item + 'index nó ở bên này: ' + index)
-              response.data.data.forEach(function (item, index) {
+              var num = 0
+              var numGet = 0
+              var rlen = response.data.data.length
+              item.newestTimeStampComment = Date.parse(response.data.data[0].created_time) / 1000
+              response.data.data.forEach(function (item3, index3) {
+                num++
                 var obj = {}
-                // console.log(item)
-                var string = item.message.replace(/ |-/gi, '')
+                var string = item3.message.replace(/ |-/gi, '')
                 var splitString1 = string.split('.')
                 var string1 = splitString1.join('')
 
@@ -114,62 +116,57 @@ export default {
                 if (matches) {
                   var replaceNumber = matches[0].replace('0', '84')
                   obj.phone = replaceNumber
-                  obj.uid = item.from.id
+                  obj.uid = item3.from.id
                   ref.dataPhone.push(obj)
-                  // console.log(obj)
-                  // console.log(replaceNumber)
-                  // console.log(item.from.id)
-                  // console.log(ref.totalComments)
-                  // console.log(Date.parse(item.created_time) / 1000)
-                  var tc = Date.parse(item.created_time) / 1000
-                  if (tc > ref.newestTimeStampComment) {
-                    ref.newestTimeStampComment = tc
-                  }
+                  numGet++
+                }
+                if (num === rlen) {
+                  console.log(item.id + ' lần 1 láy được thêm số điện thoại: ' + numGet)
                 }
               })
             }
-            // if (typeof response.data.paging.next !== 'undefined') {
-            //   console.log('cái này có trang tiếp theo')
-            //   console.log(response.data.paging.next)
-            // }
           })
-        })
-      } else {
-        this.arrIdPostLiveStream.forEach(function (item, index) {
+        } else {
           axios({
             methods: 'GET',
-            url: 'https://graph.facebook.com/' + item + '/comments?limit=50&order=reverse_chronological&access_token=EAAAAUaZA8jlABAH1BwoxVZAXY6NvjvSQAgr53PmLDjl8SQ0q3Gj4HPDfa1BTh34QWKGALcVGafsUv8bnYSsreEalOX5A5kSvS4yQhqmY7Uxfzv9FjrZARTDZCbDoInyslmcdTZCNmCyfAtzLneO8Tc6XRJJAarNfyL800K48lJQZDZD',
+            url: 'https://graph.facebook.com/' + item.id + '/comments?limit=50&order=reverse_chronological&access_token=' + ref.token,
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
           }).then(response => {
             if (response.data.data.length !== 0) {
-              ref.totalComments += response.data.data.length
-              response.data.data.forEach(function (item, index) {
-                var checkTC = Date.parse(item.created_time) / 1000
-                if (checkTC > ref.newestTimeStampComment) {
-                  ref.newestTimeStampComment = checkTC
-                  console.log(ref.newestTimeStampComment)
+              var num = 0
+              var numGet = 0
+              var rlen = response.data.data.length
+              var checkTime = item.newestTimeStampComment
+              response.data.data.forEach(function (item2, index2) {
+                num++
+                var checkTC = Date.parse(item2.created_time) / 1000
+                if (checkTC > checkTime) {
                   var obj = {}
-                  var string = item.message.replace(/ |-/gi, '')
+
+                  var string = item2.message.replace(/ |-/gi, '')
                   var splitString1 = string.split('.')
                   var string1 = splitString1.join('')
-
-                  var splitString2 = string1.replace(/o/gi, '')
+                  var splitString2 = string1.replace(/o/gi, '0')
 
                   const regex = /0[0-9\s.-]{9,9}\b/gi
                   var matches = regex.exec(splitString2)
                   if (matches) {
                     var replaceNumber = matches[0].replace('0', '84')
                     obj.phone = replaceNumber
-                    obj.uid = item.from.id
+                    obj.uid = item2.from.id
                     ref.dataPhone.push(obj)
-                    console.log(ref.totalComments)
+                    numGet++
                   }
+                }
+                if (num === rlen) {
+                  item.newestTimeStampComment = Date.parse(response.data.data[0].created_time) / 1000
+                  console.log(item.id + ' láy được thêm số điện thoại: ' + numGet)
                 }
               })
             }
           })
-        })
-      }
+        }
+      })
     },
     exportToExcel () {
       let data = this.dataPhone.map(dp => ({'FaceBook ID': dp.uid, 'Phone': dp.phone}))
@@ -181,6 +178,10 @@ export default {
 
       XLSX.writeFile(wb, 'listphone.xlsx')
     }
+    // startInterval () {
+    //   var ref = this
+    //   setInterval(ref.findPhone(), 20000)
+    // }
   }
 }
 </script>
