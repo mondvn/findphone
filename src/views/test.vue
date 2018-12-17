@@ -56,53 +56,44 @@ export default {
       newestTimeStampComment: 0,
       facebookuid1: '',
       result1: [],
-      arrIdPostLiveStream1: [],
-      auto: null,
-      autoCheckLiveStream: null
+      arrIdPostLiveStream1: []
     }
   },
   methods: {
     addPost () {
-      var ref = this
-      clearInterval(ref.auto)
-      clearInterval(ref.checkLiveStream)
       this.results1 = []
       this.arrIdPostLiveStream1 = []
       if (!this.facebookuid1) {
         alert('Vui lòng nhập thông tin vào ô UID Facebook')
         return
       }
+
+      var ref = this
       this.results1 = this.facebookuid1.split('\n')
       var num = 0
       var resultsLength1 = this.results1.length
-      var totalPostAdded = 0
-      this.results1.forEach(function (item6, index6) {
+      this.results.forEach(function (item, index) {
         axios({
           method: 'GET',
-          url: 'https://graph.facebook.com/' + item6 + '/posts?limit=5&access_token=' + ref.token,
+          url: 'https://graph.facebook.com/' + item + '/posts?limit=5&access_token=' + ref.token,
           headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(response => {
           ref.data = response.data.data
           num++
-          response.data.data.forEach(function (item5, index5) {
-            if (item5.story && item5.story.indexOf('is live now') !== -1) {
+          var totalPostAdded = 0
+          response.data.data.forEach(function (item4, index4) {
+            if (item4.story && item4.story.indexOf('is live now') !== -1) {
+              totalPostAdded++
               var obj = {}
-              obj.id = item5.id
+              obj.id = item4.id
               obj.newestTimeStampComment = 0
               obj.checkFirstTime = true
               ref.arrIdPostLiveStream.push(obj)
-              totalPostAdded++
             }
           })
           if (num === resultsLength1) {
             console.log('Có tổng cộng: ' + totalPostAdded + ' Post Live Stream được thêm vào')
             console.log(ref.arrIdPostLiveStream)
-            ref.auto = setInterval(() => {
-              ref.findPhone()
-            }, 30000)
-            ref.autoCheckLiveStream = setInterval(() => {
-              ref.checkLiveStream()
-            }, 300000)
           }
         })
       })
@@ -127,6 +118,13 @@ export default {
         }).then(response => {
           ref.data = response.data.data
           num++
+          if (num === resultsLength) {
+            console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
+            // setInterval(ref.findPhone(), 20000)
+            setInterval(() => {
+              ref.findPhone()
+            }, 20000)
+          }
           response.data.data.forEach(function (item4, index4) {
             if (item4.story && item4.story.indexOf('is live now') !== -1) {
               var obj = {}
@@ -136,21 +134,11 @@ export default {
               ref.arrIdPostLiveStream.push(obj)
             }
           })
-          if (num === resultsLength) {
-            console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
-            ref.auto = setInterval(() => {
-              ref.findPhone()
-            }, 30000)
-            ref.autoCheckLiveStream = setInterval(() => {
-              ref.checkLiveStream()
-            }, 300000)
-          }
         })
       })
     },
     findPhone () {
       var ref = this
-
       this.arrIdPostLiveStream.forEach(function (item, index) {
         if (item.checkFirstTime === true) {
           item.checkFirstTime = false
@@ -159,10 +147,7 @@ export default {
             url: 'https://graph.facebook.com/' + item.id + '/comments?limit=5000&order=reverse_chronological&access_token=' + ref.token,
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
           }).then(response => {
-            if (response.data.data.length === 0) {
-              console.log('Xóa uid khóa cmt không xem đươc: ' + item.id)
-              ref.arrIdPostLiveStream.splice(index, 1)
-            } else if (response.data.data.length !== 0) {
+            if (response.data.data.length !== 0) {
               var num = 0
               var numGet = 0
               var rlen = response.data.data.length
@@ -186,7 +171,7 @@ export default {
                   numGet++
                 }
                 if (num === rlen) {
-                  console.log(item.id + ' lần 1 lấy được số điện thoại: ' + numGet)
+                  console.log(item.id + ' lần 1 láy được thêm số điện thoại: ' + numGet)
                 }
               })
             }
@@ -230,52 +215,6 @@ export default {
               })
             }
           })
-            .catch((error) => {
-              // Error
-              ref.arrIdPostLiveStream.splice(index, 1)
-              console.log(ref.arrIdPostLiveStream)
-              if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                // console.log(error.response.data);
-                // console.log(error.response.status);
-                // console.log(error.response.headers);
-              } else if (error.request) {
-                // The request was made but no response was received
-                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                // http.ClientRequest in node.js
-                console.log(error.request)
-              } else {
-                // Something happened in setting up the request that triggered an Error
-                console.log('Error', error.message)
-              }
-              console.log(error.config)
-            })
-        }
-      })
-    },
-    checkLiveStream () {
-      console.log('Check livesteam còn sống không phát!!!')
-      var ref = this
-      clearInterval(this.auto)
-      var num = 0
-      var rlen = this.arrIdPostLiveStream.length
-      this.arrIdPostLiveStream.forEach(function (item7, index7) {
-        num++
-        axios({
-          methods: 'GET',
-          url: 'https://graph.facebook.com/' + item7.id + '?fields=story&access_token=' + ref.token,
-          headers: { 'content-type': 'application/x-www-form-urlencoded' }
-        }).then(response => {
-          if (response.data.story.indexOf('is live now') === -1) {
-            ref.arrIdPostLiveStream.splice(index7, 1)
-            console.log('Xóa thành công thằng không livestream nữa' + item7.id)
-          }
-        })
-        if (num === rlen) {
-          ref.auto = setInterval(() => {
-            ref.findPhone()
-          }, 30000)
         }
       })
     },

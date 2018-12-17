@@ -60,6 +60,9 @@ export default {
         console.error(error)
       })
     }
+    // this.$router.push('/live-stream')
+    // location.reload()
+
     const plugin = document.createElement('script')
     plugin.setAttribute(
       'src',
