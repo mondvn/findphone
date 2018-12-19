@@ -6,7 +6,7 @@
     <div class="panel-body">
         <div class="row">
           <div class="form-group">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
               <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
                 <label class=" control-label" for="demo-is-inputsmall"><strong>Nhập Facebook UID tại đây:</strong></label>
                 <br>
@@ -16,7 +16,7 @@
                 <input id="btn-submit" class="btn btn-info" type="submit" value="Run application" @click='getPost()' />
               </div>
             </div>
-            <div class="col-lg-6">
+            <!-- <div class="col-lg-6">
               <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
                 <label class=" control-label" for="demo-is-inputsmall"><strong>Thêm Facebook UID mới tại đây:</strong></label>
                 <br>
@@ -25,7 +25,7 @@
               <div class="col-lg-12" style="padding-left: 80px">
                 <input id="btn-submit" class="btn btn-info" type="submit" value="Add more UID" @click='addPost()' />
               </div>
-            </div>
+            </div> -->
             <!-- <div class="col-lg-12" style="padding-right: 80px; padding-left: 80px">
               <textarea style="width:100%" name="message" rows="5" v-model="listIdPost"></textarea>
             </div>
@@ -74,11 +74,13 @@ export default {
       facebookuid1: '',
       result1: [],
       arrIdPostLiveStream1: [],
+      firstGetPost: null,
       auto: null,
       autoCheckLiveStream: null,
       logs: [],
       totalPhoneNumber: 0,
-      totalPostLiveSteam: 0
+      totalPostLiveSteam: 0,
+      rPhoneList: []
     }
   },
   methods: {
@@ -161,19 +163,17 @@ export default {
             console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
             ref.logs.push('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream \n')
             ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
-            ref.auto = setInterval(() => {
+            ref.firstGetPost = setTimeout(() => {
               ref.findPhone()
-            }, 30000)
-            ref.autoCheckLiveStream = setInterval(() => {
-              ref.checkLiveStream()
-            }, 300000)
+            }, 5000)
           }
         })
       })
     },
     findPhone () {
       var ref = this
-
+      var bigNum = 0
+      var arrIdPostLiveStreamLength = this.arrIdPostLiveStream.length
       this.arrIdPostLiveStream.forEach(function (item, index) {
         if (item.checkFirstTime === true) {
           item.checkFirstTime = false
@@ -183,6 +183,7 @@ export default {
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
           }).then(response => {
             if (response.data.data.length === 0) {
+              bigNum++
               console.log('Xóa uid khóa cmt không xem đươc: ' + item.id)
               ref.logs.push('Xóa uid khóa cmt không xem đươc: ' + item.id + '\n')
               ref.arrIdPostLiveStream.splice(index, 1)
@@ -211,9 +212,18 @@ export default {
                   numGet++
                 }
                 if (num === rlen) {
-                  console.log(item.id + ' lần 1 lấy được số điện thoại: ' + numGet)
-                  ref.logs.push(item.id + ' lần 1 lấy được số điện thoại: ' + numGet + '\n')
+                  if (numGet !== 0) {
+                    console.log(item.id + ' lần 1 lấy được số điện thoại: ' + numGet)
+                    ref.logs.push(item.id + ' lần 1 lấy được số điện thoại: ' + numGet + '\n')
+                  }
                   ref.totalPhoneNumber = ref.totalPhoneNumber + numGet
+                  bigNum++
+                  if (bigNum === arrIdPostLiveStreamLength) {
+                    ref.autoCheckLiveStream = setInterval(() => {
+                      ref.checkLiveStream()
+                    }, 300000)
+                    ref.pushDatatoServer()
+                  }
                 }
               })
             }
@@ -252,8 +262,10 @@ export default {
                 }
                 if (num === rlen) {
                   item.newestTimeStampComment = Date.parse(response.data.data[0].created_time) / 1000
-                  console.log(item.id + ' lấy được thêm số điện thoại: ' + numGet)
-                  ref.logs.push(item.id + ' lấy được thêm số điện thoại: ' + numGet + '\n')
+                  if (numGet !== 0) {
+                    console.log(item.id + ' lấy được thêm số điện thoại: ' + numGet)
+                    ref.logs.push(item.id + ' lấy được thêm số điện thoại: ' + numGet + '\n')
+                  }
                   ref.totalPhoneNumber = ref.totalPhoneNumber + numGet
                 }
               })
@@ -306,14 +318,39 @@ export default {
           }
         })
         if (num === rlen) {
-          ref.auto = setInterval(() => {
-            ref.findPhone()
-          }, 30000)
+          ref.pushDatatoServer()
         }
       })
     },
+    pushDatatoServer () {
+      var ref = this
+      this.rPhoneList = []
+      this.rPhoneList = this.chunkArray(this.dataPhone, 20)
+      var num = 0
+      var totalPhone = 0
+      var rPhoneListLength = this.rPhoneList.length
+      this.rPhoneList.forEach(function (item, index) {
+        axios({
+          method: 'POST',
+          url: 'http://sayfb.com/api.php',
+          data: 'listData=' + JSON.stringify(item) + '&action=pushdata',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' }
+        })
+          .then(response => {
+            num++
+            totalPhone += response.data.length
+            if (num === rPhoneListLength) {
+              ref.logs.push('Vừa thêm đươc: ' + totalPhone + ' số điện thoại vào data server\n')
+              ref.auto = setInterval(() => {
+                ref.findPhone()
+              }, 30000)
+              ref.dataPhone = []
+            }
+          })
+      })
+    },
     exportToExcel () {
-      let data = this.dataPhone.map(dp => ({'FaceBook ID': dp.uid, 'Phone': dp.phone}))
+      let data = this.dataPhone.map(dp => ({'facebookid': dp.uid, 'Phone': dp.phone}))
 
       let ws = XLSX.utils.json_to_sheet(data)
 
@@ -321,6 +358,13 @@ export default {
       XLSX.utils.book_append_sheet(wb, ws, 'People')
 
       XLSX.writeFile(wb, 'listphone.xlsx')
+    },
+    chunkArray (myArray, chunkSize) {
+      var results11 = []
+      while (myArray.length) {
+        results11.push(myArray.splice(0, chunkSize))
+      }
+      return results11
     }
   }
 }
