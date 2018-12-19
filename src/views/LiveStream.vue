@@ -6,30 +6,47 @@
     <div class="panel-body">
         <div class="row">
           <div class="form-group">
-            <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
-              <label class=" control-label" for="demo-is-inputsmall"><strong>Nhập Facebook UID tại đây:</strong></label>
-              <br>
-              <textarea style="width:100%" name="message" rows="5" placeholder="Ví dụ: 1000009128473945" v-model="facebokuid"></textarea>
+            <div class="col-lg-6">
+              <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
+                <label class=" control-label" for="demo-is-inputsmall"><strong>Nhập Facebook UID tại đây:</strong></label>
+                <br>
+                <textarea style="width:100%" name="message" rows="5" placeholder="Ví dụ: 1000009128473945" v-model="facebokuid"></textarea>
+              </div>
+              <div class="col-lg-12" style="padding-left: 80px">
+                <input id="btn-submit" class="btn btn-info" type="submit" value="Run application" @click='getPost()' />
+              </div>
             </div>
-            <div class="col-lg-12" style="padding-left: 80px">
-              <input id="btn-submit" class="btn btn-info" type="submit" value="Get UID" @click='getPost()' />
+            <div class="col-lg-6">
+              <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
+                <label class=" control-label" for="demo-is-inputsmall"><strong>Thêm Facebook UID mới tại đây:</strong></label>
+                <br>
+                <textarea style="width:100%" name="message" rows="5" placeholder="Ví dụ: 1000009128473945" v-model="facebookuid1"></textarea>
+              </div>
+              <div class="col-lg-12" style="padding-left: 80px">
+                <input id="btn-submit" class="btn btn-info" type="submit" value="Add more UID" @click='addPost()' />
+              </div>
             </div>
-            <div class="col-lg-12" style="padding-right: 80px; padding-left: 80px">
+            <!-- <div class="col-lg-12" style="padding-right: 80px; padding-left: 80px">
               <textarea style="width:100%" name="message" rows="5" v-model="listIdPost"></textarea>
             </div>
             <div class="col-lg-12" style="padding-left: 80px">
               <input id="btn-submit" class="btn btn-info" type="submit" value="Find Phone" @click='findPhone()' />
-            </div>
-            <div class="col-lg-12" style="padding-left: 80px; padding-right: 80px">
-              <label class=" control-label" for="demo-is-inputsmall"><strong>Nhập Facebook UID tại đây:</strong></label>
+            </div> -->
+            <div class="col-lg-3">
               <br>
-              <textarea style="width:100%" name="message" rows="5" placeholder="Ví dụ: 1000009128473945" v-model="facebookuid1"></textarea>
+              <br>
+              <button class="btn btn-primary btn-block" @click="exportToExcel">Save Excel</button>
             </div>
-            <div class="col-lg-12" style="padding-left: 80px">
-              <input id="btn-submit" class="btn btn-info" type="submit" value="Add more UID" @click='addPost()' />
-            </div>
-            <div class="col-lg-6">
-                <button class="btn btn-primary btn-block" @click="exportToExcel">Save Excel</button>
+            <div class="col-lg-12">
+              <br>
+              <div class="col-lg-6">
+                <span>Tổng Số Post Live Stream: {{totalPostLiveSteam}}</span>
+              </div>
+              <div class="col-lg-6">
+                <span>Tổng Số Điện Thoại Quét Được: {{totalPhoneNumber}}</span>
+              </div>
+              <br>
+              <textarea style="width:100%" name="message" rows="12" v-model="logs"></textarea>
             </div>
           </div>
         </div>
@@ -58,7 +75,10 @@ export default {
       result1: [],
       arrIdPostLiveStream1: [],
       auto: null,
-      autoCheckLiveStream: null
+      autoCheckLiveStream: null,
+      logs: [],
+      totalPhoneNumber: 0,
+      totalPostLiveSteam: 0
     }
   },
   methods: {
@@ -96,7 +116,8 @@ export default {
           })
           if (num === resultsLength1) {
             console.log('Có tổng cộng: ' + totalPostAdded + ' Post Live Stream được thêm vào')
-            console.log(ref.arrIdPostLiveStream)
+            ref.logs.push('Có tổng cộng: ' + totalPostAdded + ' Post Live Stream được thêm vào \n')
+            ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
             ref.auto = setInterval(() => {
               ref.findPhone()
             }, 30000)
@@ -138,6 +159,8 @@ export default {
           })
           if (num === resultsLength) {
             console.log('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream')
+            ref.logs.push('Có tổng cộng: ' + ref.arrIdPostLiveStream.length + ' Post Live Stream \n')
+            ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
             ref.auto = setInterval(() => {
               ref.findPhone()
             }, 30000)
@@ -161,7 +184,9 @@ export default {
           }).then(response => {
             if (response.data.data.length === 0) {
               console.log('Xóa uid khóa cmt không xem đươc: ' + item.id)
+              ref.logs.push('Xóa uid khóa cmt không xem đươc: ' + item.id + '\n')
               ref.arrIdPostLiveStream.splice(index, 1)
+              ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
             } else if (response.data.data.length !== 0) {
               var num = 0
               var numGet = 0
@@ -187,6 +212,8 @@ export default {
                 }
                 if (num === rlen) {
                   console.log(item.id + ' lần 1 lấy được số điện thoại: ' + numGet)
+                  ref.logs.push(item.id + ' lần 1 lấy được số điện thoại: ' + numGet + '\n')
+                  ref.totalPhoneNumber = ref.totalPhoneNumber + numGet
                 }
               })
             }
@@ -225,15 +252,18 @@ export default {
                 }
                 if (num === rlen) {
                   item.newestTimeStampComment = Date.parse(response.data.data[0].created_time) / 1000
-                  console.log(item.id + ' láy được thêm số điện thoại: ' + numGet)
+                  console.log(item.id + ' lấy được thêm số điện thoại: ' + numGet)
+                  ref.logs.push(item.id + ' lấy được thêm số điện thoại: ' + numGet + '\n')
+                  ref.totalPhoneNumber = ref.totalPhoneNumber + numGet
                 }
               })
             }
           })
             .catch((error) => {
               // Error
+              ref.logs.push('Có lỗi xảy ra, có vẻ là do Page xóa post live stream hoặc mất mạng!!!! \n')
               ref.arrIdPostLiveStream.splice(index, 1)
-              console.log(ref.arrIdPostLiveStream)
+              ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
               if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
@@ -255,8 +285,9 @@ export default {
       })
     },
     checkLiveStream () {
-      console.log('Check livesteam còn sống không phát!!!')
       var ref = this
+      console.log('Check livesteam còn sống không phát!!!')
+      ref.logs.push('Check livesteam còn sống không phát!!! \n')
       clearInterval(this.auto)
       var num = 0
       var rlen = this.arrIdPostLiveStream.length
@@ -270,6 +301,8 @@ export default {
           if (response.data.story.indexOf('is live now') === -1) {
             ref.arrIdPostLiveStream.splice(index7, 1)
             console.log('Xóa thành công thằng không livestream nữa' + item7.id)
+            ref.logs.push('Xóa thành công thằng không livestream nữa' + item7.id + ' \n')
+            ref.totalPostLiveSteam = ref.arrIdPostLiveStream.length
           }
         })
         if (num === rlen) {

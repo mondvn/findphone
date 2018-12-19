@@ -10,6 +10,8 @@ import Payment from '@/views/Payment'
 import ConvertOne from '@/views/ConvertOne'
 import ChangePassword from '@/views/ChangePassword'
 import LiveStream from '@/views/LiveStream'
+import Membergroup from '@/views/Membergroup'
+import FindLiveStreamer from '@/views/FindLiveStreamer'
 
 Vue.use(Router)
 
@@ -71,6 +73,16 @@ export default new Router({
       path: '/live-stream',
       name: 'LiveStream',
       component: LiveStream
+    },
+    {
+      path: '/member-group',
+      name: 'Membergroup',
+      component: Membergroup
+    },
+    {
+      path: '/find-livestreamer',
+      name: 'FindLiveStreamer',
+      component: FindLiveStreamer
     }
   ]
 })

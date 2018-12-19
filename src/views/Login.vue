@@ -87,8 +87,8 @@ export default {
     sendData () {
       axios({
         method: 'POST',
-        // url: '/api.php',
         url: 'http://sayfb.com/api.php',
+        // url: 'http://localhost/test/test.php',
         data: 'email=' + this.input.email + '&password=' + this.input.password + '&action=login',
         headers: { 'content-type': 'application/x-www-form-urlencoded' }
       }).then(result => {

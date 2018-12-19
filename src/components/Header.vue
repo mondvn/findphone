@@ -10,7 +10,7 @@
             <img src="http://sayfb.com/fav.png">
             <!-- <img src="/fav.png"> -->
 
-            <span >Ninja Convent SĐT</span>
+            <span >Ninja LiveStream</span>
         </div>
     </router-link>
 </div>

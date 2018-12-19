@@ -23,7 +23,7 @@ import Sidebar from '@/components/Sidebar'
 import Headers from '@/components/Header'
 import Footerns from '@/components/Footerns'
 import PageTitle from '@/components/PageTitle'
-import axios from 'axios'
+// import axios from 'axios'
 
 export default {
   name: 'App',
@@ -42,24 +42,25 @@ export default {
   mounted () {
     if (!this.$session.exists()) {
       this.$router.push('/login')
-    } else {
-      axios({
-        method: 'POST',
-        // url: '/api.php',
-        url: 'http://sayfb.com/api.php',
-        data: 'token=' + this.$session.get('token') + '&action=getpoint',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' }
-      }).then(result => {
-        if (result.data.status === false) {
-          alert('Đăng nhập hết hạn')
-          this.$session.destroy()
-          this.$router.push('/login')
-        } else {
-        }
-      }, error => {
-        console.error(error)
-      })
     }
+    // } else {
+    //   axios({
+    //     method: 'POST',
+    //     // url: '/api.php',
+    //     url: 'http://sayfb.com/api.php',
+    //     data: 'token=' + this.$session.get('token') + '&action=getpoint',
+    //     headers: { 'content-type': 'application/x-www-form-urlencoded' }
+    //   }).then(result => {
+    //     if (result.data.status === false) {
+    //       alert('Đăng nhập hết hạn')
+    //       this.$session.destroy()
+    //       this.$router.push('/login')
+    //     } else {
+    //     }
+    //   }, error => {
+    //     console.error(error)
+    //   })
+    // }
     // this.$router.push('/live-stream')
     // location.reload()
 

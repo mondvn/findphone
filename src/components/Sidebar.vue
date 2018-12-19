@@ -48,7 +48,7 @@
                             </li>
 
                             <!--Menu list item-->
-                            <li>
+                            <!-- <li>
                                 <a href="#">
                                     <i class="fa fa-flask"></i>
                                     <span class="menu-title">
@@ -57,7 +57,6 @@
                                     <i class="arrow"></i>
                                 </a>
 
-                                <!--Submenu-->
                                 <ul class="collapse">
                                     <li>
                                         <router-link v-bind:to="'/convert-uid/convert'">Lấy từ nhiều UID FB</router-link>
@@ -70,8 +69,8 @@
                                     </li>
                                     <li class="list-divider"></li>
                                 </ul>
-                            </li>
-                            <li>
+                            </li> -->
+                            <!-- <li>
                                 <router-link v-bind:to="'/get-uid'">
                                    <i class="fa fa-edit"></i>
                                     <span class="menu-title">
@@ -79,8 +78,8 @@
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
-                            </li>
-                            <li>
+                            </li> -->
+                            <!-- <li>
                                 <router-link v-bind:to="'/payment'">
                                    <i class="fa fa-dollar"></i>
                                     <span class="menu-title">
@@ -88,12 +87,30 @@
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
-                            </li>
+                            </li> -->
                             <li>
                                 <router-link v-bind:to="'/live-stream'">
                                    <i class="fa fa-dollar"></i>
                                     <span class="menu-title">
                                         <strong>LiveStream</strong>
+                                    </span>
+                                    <i class="arrow"></i>
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link v-bind:to="'/member-group'">
+                                   <i class="fa fa-dollar"></i>
+                                    <span class="menu-title">
+                                        <strong>Quét Member Group</strong>
+                                    </span>
+                                    <i class="arrow"></i>
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link v-bind:to="'/find-livestreamer'">
+                                   <i class="fa fa-dollar"></i>
+                                    <span class="menu-title">
+                                        <strong>Find LiveStreamer</strong>
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
