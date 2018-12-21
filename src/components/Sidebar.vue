@@ -97,7 +97,16 @@
                                     <i class="arrow"></i>
                                 </router-link>
                             </li>
-                            <li>
+                             <li>
+                                <router-link v-bind:to="'/find-post-image'">
+                                   <i class="fa fa-dollar"></i>
+                                    <span class="menu-title">
+                                        <strong>Find Post Image</strong>
+                                    </span>
+                                    <i class="arrow"></i>
+                                </router-link>
+                            </li>
+                            <!-- <li>
                                 <router-link v-bind:to="'/member-group'">
                                    <i class="fa fa-dollar"></i>
                                     <span class="menu-title">
@@ -105,8 +114,8 @@
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
-                            </li>
-                            <li>
+                            </li> -->
+                            <!-- <li>
                                 <router-link v-bind:to="'/find-livestreamer'">
                                    <i class="fa fa-dollar"></i>
                                     <span class="menu-title">
@@ -114,7 +123,7 @@
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
-                            </li>
+                            </li> -->
                         </ul>
                         <div class="mainnav-widget">
 
