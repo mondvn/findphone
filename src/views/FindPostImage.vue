@@ -46,6 +46,8 @@ export default {
         return
       }
       this.results = this.facebookuid.split('\n')
+      var resultsLength = this.results.length
+      var numResults = 0
       this.results.forEach(function (item, index) {
         axios({
           method: 'GET',
@@ -56,29 +58,33 @@ export default {
           var responseLength = response.data.data.length
           var num = 0
           response.data.data.forEach(function (item1, index1) {
-            num++
             if (item1.type === 'photo') {
               if (item1.attachments.data[0].subattachments) {
+                num++
                 item1.attachments.data[0].subattachments.data.forEach(function (item2, index2) {
-                  // console.log(item2.target.id)
                   var obj = {}
                   obj.postid = item2.target.id
                   obj.userid = item
                   ref.listID.push(obj)
                 })
               } else {
-                // console.log(item1.attachments.data[0].target.id)
+                num++
                 var obj = {}
                 obj.postid = item1.attachments.data[0].target.id
                 obj.userid = item
                 ref.listID.push(obj)
               }
+            } else {
+              num++
             }
             if (num === responseLength) {
-              console.log('chạy getkeyword')
-              ref.getKeyWord()
+              numResults++
             }
           })
+          if (numResults === resultsLength) {
+            console.log('chạy getkeyword')
+            ref.getKeyWord()
+          }
         })
       })
     },
@@ -111,7 +117,6 @@ export default {
             })
           }
           numGetKeyWord++
-          console.log(numGetKeyWord)
           if (numGetKeyWord === listIDLength) {
             ref.pushDataToSever()
           }
@@ -120,6 +125,7 @@ export default {
     },
     pushDataToSever () {
       console.log('push data đây')
+      console.log(this.listResult)
     }
   }
 }
