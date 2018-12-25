@@ -13,6 +13,8 @@ import LiveStream from '@/views/LiveStream'
 import Membergroup from '@/views/Membergroup'
 import FindLiveStreamer from '@/views/FindLiveStreamer'
 import FindPostImage from '@/views/FindPostImage'
+import HistoryCmt from '@/views/HistoryCmt'
+
 Vue.use(Router)
 
 export default new Router({
@@ -88,6 +90,11 @@ export default new Router({
       path: '/find-post-image',
       name: 'FindPostImage',
       component: FindPostImage
+    },
+    {
+      path: '/history-cmt',
+      name: 'HistoryCmt',
+      component: HistoryCmt
     }
   ]
 })

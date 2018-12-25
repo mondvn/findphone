@@ -29,7 +29,7 @@ export default {
   name: 'FindPostImage',
   data: function () {
     return {
-      token: 'EAAAAUaZA8jlABAMzZA64j8tsHAqjVVbfCbbYVxuTfXiibkVb3XKTOeegOKoXvMoDmPkhDM3QDEHryHmnQJsBXfBpDru9ywIlOgGbI32EE02YRfUKGxlQxwAzRVRoEHHeEHOf75IQpTysYvYJn7Hw5ZAAlE2xR485nqSGyx1bGFgHu6RczVYFjZCAtjwwxKgZD',
+      token: 'EAAAAUaZA8jlABANzDgyfJmAlQ7HutjAyM2ewsZAUKWnal1Aa9ZAfmY8MmsGQh5N1Y6KE4oFMZBKvqmRRLAd4hXYwEWkMRETFMWTFaZBv3YkM8kQ8MT5BV0k0IWGhDlIbomPQ4J6Bw8R3AWViTH1L900DAXIn3KHe6tsuiUJdGPS4jt24V6CJX',
       facebookuid: '',
       results: [],
       listID: [],
@@ -51,7 +51,7 @@ export default {
       this.results.forEach(function (item, index) {
         axios({
           method: 'GET',
-          url: 'https://graph.facebook.com/v3.2/' + item + '/posts?fields=attachments,type&limit=50&access_token=' + ref.token,
+          url: 'https://graph.facebook.com/v3.2/' + item + '/posts?fields=attachments,type,message&limit=100&access_token=' + ref.token,
           headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(response => {
           // console.log(response.data)
@@ -72,6 +72,11 @@ export default {
                 var obj = {}
                 obj.postid = item1.attachments.data[0].target.id
                 obj.userid = item
+                if (item1.message) {
+                  obj.message = item1.message
+                } else {
+                  obj.message = ''
+                }
                 ref.listID.push(obj)
               }
             } else {
@@ -99,22 +104,22 @@ export default {
           url: 'https://graph.facebook.com/graphql?q=node(' + item3.postid + ')%7Bautomatic_accessibility_caption,feedback%7Btop_level_comments%7Bcount,nodes.first(1000)%7Bbody%7Btext%7D%7D%7D%7D%7D&method=get&locale=vi_VN&access_token=' + ref.token,
           headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(response => {
-          if (response.data[item3.postid].automatic_accessibility_caption && response.data[item3.postid].automatic_accessibility_caption.indexOf('Không có văn bản thay thế tự động nào.') === -1) {
+          if (response.data[item3.postid].automatic_accessibility_caption !== null && response.data[item3.postid].automatic_accessibility_caption.indexOf('Không có văn bản thay thế tự động nào.') === -1) {
             var res = response.data[item3.postid].automatic_accessibility_caption.replace('Trong hình ảnh có thể có: ', '')
-            // console.log(res)
-          }
-          if (response.data[item3.postid].feedback.top_level_comments.count !== 0) {
-            response.data[item3.postid].feedback.top_level_comments.nodes.forEach(function (item4, index4) {
-              if (item4.body !== null) {
-                // console.log(item4.body.text)
-                var obj = {}
-                obj.cmt = item4.body.text
-                obj.keyword = res
-                obj.userid = item3.userid
-                ref.listResult.push(obj)
-                // console.log(obj)
-              }
-            })
+            if (response.data[item3.postid].feedback !== null && response.data[item3.postid].feedback.top_level_comments.count !== 0) {
+              response.data[item3.postid].feedback.top_level_comments.nodes.forEach(function (item4, index4) {
+                if (item4.body !== null) {
+                  // console.log(item4.body.text)
+                  var obj = {}
+                  obj.cmt = item4.body.text
+                  obj.keyword = res
+                  obj.userid = item3.userid
+                  obj.message = item3.message
+                  ref.listResult.push(obj)
+                  // console.log(obj)
+                }
+              })
+            }
           }
           numGetKeyWord++
           if (numGetKeyWord === listIDLength) {
@@ -126,6 +131,20 @@ export default {
     pushDataToSever () {
       console.log('push data đây')
       console.log(this.listResult)
+      this.listResult.forEach(function (item5, index5) {
+        axios({
+          method: 'POST',
+          // url: 'http://localhost/test/test.php',
+          url: 'http://sayfb.com/cmtapi.php',
+          data: 'cmt=' + item5.cmt + '&keyword=' + item5.keyword + '&userid=' + item5.userid + '&message=' + item5.message + '&action=savedb',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' }
+        })
+          .then(response => {
+            console.log(response)
+          }, error => {
+            console.error(error)
+          })
+      })
     }
   }
 }

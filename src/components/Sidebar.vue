@@ -97,11 +97,20 @@
                                     <i class="arrow"></i>
                                 </router-link>
                             </li>
-                             <li>
+                            <li>
                                 <router-link v-bind:to="'/find-post-image'">
                                    <i class="fa fa-dollar"></i>
                                     <span class="menu-title">
                                         <strong>Find Post Image</strong>
+                                    </span>
+                                    <i class="arrow"></i>
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link v-bind:to="'/history-cmt'">
+                                   <i class="fa fa-dollar"></i>
+                                    <span class="menu-title">
+                                        <strong>History</strong>
                                     </span>
                                     <i class="arrow"></i>
                                 </router-link>
